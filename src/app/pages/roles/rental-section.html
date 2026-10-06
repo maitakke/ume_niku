@@ -1,27 +1,3 @@
-<!-- レンタル代を支払った家族 -->
-<section class="card">
-  <mat-form-field appearance="outline" class="full-width payer">
-    <mat-label>レンタル代を支払った家族</mat-label>
-    <mat-select [value]="payerId() ?? undecided" (selectionChange)="setPayer($event.value)">
-      <mat-option [value]="undecided">未定</mat-option>
-      @for (family of store.families(); track family.id) {
-        <mat-option [value]="family.id">{{ family.name }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-  @if (payerId() === null) {
-    <p class="warning">
-      <mat-icon>info</mat-icon>
-      支払った家族が「未定」のあいだは、レンタル代は精算に入りません。
-    </p>
-  }
-</section>
-
-<!-- 入力欄と追加ボタン -->
-<section class="card">
-  <app-rental-item-form [saving]="saving()" (save)="add($event)" />
-</section>
-
 <!-- 一覧 -->
 @for (item of items(); track item.id) {
   <section class="card rental-card">
@@ -103,4 +79,29 @@
     <span>レンタル品の合計</span>
     <span>{{ store.rentalSummary().total | yen }}</span>
   </div>
+</section>
+
+<!-- レンタル代を支払った家族 -->
+<section class="card">
+  <mat-form-field appearance="outline" class="full-width payer">
+    <mat-label>レンタル代を支払った家族</mat-label>
+    <mat-select [value]="payerId() ?? undecided" (selectionChange)="setPayer($event.value)">
+      <mat-option [value]="undecided">未定</mat-option>
+      @for (family of store.families(); track family.id) {
+        <mat-option [value]="family.id">{{ family.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  @if (payerId() === null) {
+    <p class="warning">
+      <mat-icon>info</mat-icon>
+      支払った家族が「未定」のあいだは、レンタル代は精算に入りません。
+    </p>
+  }
+</section>
+
+<!-- 何を借りるかの登録 -->
+<section class="card">
+  <h2 class="form-title">レンタル品を追加</h2>
+  <app-rental-item-form [saving]="saving()" (save)="add($event)" />
 </section>

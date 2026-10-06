@@ -24,6 +24,9 @@ export class AssignedItemsSection {
   /** どちらの欄か（食材 / 持ち寄り） */
   readonly category = input.required<'food' | 'bring'>();
 
+  /** 一覧の行を、担当の家族ごとに色分けするか */
+  readonly colorByFamily = input(false);
+
   /** この欄の品目 */
   protected readonly items = computed(() =>
     (this.store.items() ?? []).filter(
@@ -63,6 +66,14 @@ export class AssignedItemsSection {
       return;
     }
     await this.runSaving(() => this.itemService.deleteItem(this.store.roomId(), item.id));
+  }
+
+  /** 行の色（色分けしないとき、担当が未定のときは null＝いつもの色） */
+  protected rowColor(item: AssignedItem): string | null {
+    if (!this.colorByFamily() || this.isUndecided(item)) {
+      return null;
+    }
+    return this.store.familyColor(item.assigneeFamilyId);
   }
 
   protected toInput(item: AssignedItem): AssignedItemInput {

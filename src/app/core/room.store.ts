@@ -7,7 +7,7 @@ import { ItemService } from './item.service';
 import { ExpenseService } from './expense.service';
 import { CurrentFamilyService } from './current-family.service';
 import { SettlementService } from './settlement.service';
-import { EXPENSE_CATEGORIES } from '../constants';
+import { EXPENSE_CATEGORIES, FAMILY_COLORS } from '../constants';
 import { Family } from '../models/family';
 import { AssignedItem, Item } from '../models/item';
 import { Expense } from '../models/expense';
@@ -140,6 +140,15 @@ export class RoomStore {
       return '未定';
     }
     return this.familyNames().get(familyId) ?? '削除された家族';
+  }
+
+  /**
+   * 家族ごとの色（家族の登録順に割り当てる）。見つからない家族は null。
+   * ※ 家族を削除すると、それより後に登録した家族の色がずれる
+   */
+  familyColor(familyId: string | null): string | null {
+    const index = (this.families() ?? []).findIndex((family) => family.id === familyId);
+    return index < 0 ? null : FAMILY_COLORS[index % FAMILY_COLORS.length];
   }
 
   /** 食材・持ち寄りの担当が「未定」か（担当の家族が削除された場合も未定として扱う） */

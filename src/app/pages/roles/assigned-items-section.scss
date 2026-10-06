@@ -28,6 +28,18 @@
   cursor: pointer;
 }
 
+// 家族ごとの色分け：左の線を家族の色に、背景をその色のうすい色にする
+.item.colored {
+  border-left-color: var(--family-color);
+  background: color-mix(in srgb, var(--family-color) 12%, white);
+}
+
+.item.colored .assignee {
+  background: var(--family-color);
+  color: #fff;
+  font-weight: 700;
+}
+
 .item.editing {
   display: block;
   padding: 12px;
