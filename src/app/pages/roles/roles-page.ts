@@ -31,7 +31,8 @@ import { RentalSection } from './rental-section';
         <app-assigned-items-section category="food" />
       }
       @case ('bring') {
-        <app-assigned-items-section category="bring" />
+        <!-- 持ち寄りは、担当の家族ごとに色分けする -->
+        <app-assigned-items-section category="bring" [colorByFamily]="true" />
       }
       @case ('rental') {
         <app-rental-section />

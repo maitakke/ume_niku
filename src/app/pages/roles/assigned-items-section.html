@@ -35,7 +35,14 @@
         </button>
       </div>
     } @else {
-      <button class="item" (click)="editingId.set(item.id)" [attr.aria-label]="item.name + 'を編集'">
+      <!-- 色分けするときは、担当の家族の色を --family-color として渡す -->
+      <button
+        class="item"
+        [class.colored]="rowColor(item) !== null"
+        [style.--family-color]="rowColor(item)"
+        (click)="editingId.set(item.id)"
+        [attr.aria-label]="item.name + 'を編集'"
+      >
         <span class="item-name">{{ item.name }}</span>
         @if (isUndecided(item)) {
           <span class="tag-accent">未定</span>

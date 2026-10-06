@@ -1,8 +1,11 @@
 # GitHub Actions：コードがプッシュされたら、自動でテスト・ビルドして Firebase に公開する
+#
+# - main ブランチ        → 本番（https://umeniku-bbq.web.app）とセキュリティルールに公開
+# - 開発用ブランチ        → プレビュー用URL（チャンネル「dev」）にだけ公開。本番とルールは変えない
+#   ※ プレビューも本番と同じデータベースを使うので、確認はテスト用のグループで行うこと
 name: Firebase に公開
 
 on:
-  # 下のブランチにプッシュされたとき
   push:
     branches:
       - main
@@ -12,7 +15,7 @@ on:
 
 # 公開が同時に2つ走らないようにする（後から来たものは前の完了を待つ）
 concurrency:
-  group: deploy
+  group: deploy-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -58,5 +61,15 @@ jobs:
           printf '%s' "$SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/service-account.json"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/service-account.json" >> "$GITHUB_ENV"
 
-      - name: Firebase に公開（Hosting とセキュリティルール）
+      - name: 本番に公開（Hosting とセキュリティルール）
+        if: github.ref_name == 'main'
         run: npx firebase deploy --only hosting,firestore:rules --project umeniku-bbq --non-interactive
+
+      - name: プレビュー用URLに公開（Hosting のみ・30日で期限切れ）
+        if: github.ref_name != 'main'
+        run: |
+          npx firebase hosting:channel:deploy dev --expires 30d --project umeniku-bbq --non-interactive | tee "$RUNNER_TEMP/channel.log"
+          # プレビュー用URLを、Actions の実行結果のページに表示する
+          URL=$(grep -oE 'https://umeniku-bbq--dev-[a-z0-9-]+\.web\.app' "$RUNNER_TEMP/channel.log" | head -1)
+          echo "### プレビュー用URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "$URL" >> "$GITHUB_STEP_SUMMARY"

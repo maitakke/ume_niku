@@ -49,16 +49,17 @@ docs/plan.md             設計メモ（データ構造、ルール、決めた�
 
 ## 公開のしくみ（GitHub Actions）
 
-`claude/vibrant-brahmagupta-mv6ugv` または `main` ブランチにプッシュすると、
-GitHub Actions（`.github/workflows/deploy.yml`）が自動で次を行います。
+プッシュすると、GitHub Actions（`.github/workflows/deploy.yml`）が自動でテストとビルドを行い、
+ブランチによって公開先を分けます。テストが1つでも失敗すると公開されません。
 
-1. ユニットテスト
-2. セキュリティルールのテスト（Firestore エミュレーター）
-3. ビルド
-4. Firebase Hosting とセキュリティルールの公開
+| ブランチ | 公開先 |
+|---|---|
+| `main` | **本番**（https://umeniku-bbq.web.app）とセキュリティルール |
+| `claude/vibrant-brahmagupta-mv6ugv`（開発用） | **プレビュー用URL**（`https://umeniku-bbq--dev-○○○.web.app`、30日で期限切れ）。本番とルールは変わらない |
 
-テストが1つでも失敗すると公開されません。
-GitHub の「Actions」タブの「Run workflow」から手動で公開することもできます。
+- プレビュー用URLは、GitHub の「Actions」→ 実行結果のページの下（Summary）に表示されます
+- プレビューも本番と同じデータベースを使うので、確認はテスト用のグループで行ってください
+- 本番に出すときは、開発用ブランチから `main` へのプルリクエストを作って「Merge」します
 
 公開には、GitHub の Secrets に `FIREBASE_SERVICE_ACCOUNT`（サービスアカウントの鍵 JSON）の登録が必要です。
 鍵はチャットやコードには絶対に書かないでください。
