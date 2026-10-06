@@ -1,9 +1,7 @@
+// アプリ全体のスタイル
+// ※ 色・角丸などのデザインは Step 5 で docs/design-ref/ をもとに決めて、ここにまとめる
 
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
+// Angular Material のテーマ（色・文字・密度）
 @use '@angular/material' as mat;
 
 html {
@@ -17,23 +15,71 @@ html {
   ));
 }
 
+html,
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
-  color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
-  margin: 0;
+  height: 100%;
 }
-/* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body {
+  color-scheme: light;
+  margin: 0;
+  background-color: var(--mat-sys-surface-container-low);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-large);
+  // 日本語の文字は、端末ごとの読みやすい日本語フォントで表示する
+  font-family: Roboto, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', Meiryo,
+    sans-serif;
+}
+
+// ===== 共通で使うクラス =====
+
+// 1画面分の中身（スマホ幅を基本に、PCでは中央に寄せる）
+.page {
+  box-sizing: border-box;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+// 白いカード
+.card {
+  padding: 20px 16px;
+  margin-bottom: 16px;
+  background: var(--mat-sys-surface);
+  border-radius: 20px;
+}
+
+// 中央寄せ
+.center-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+// 横幅いっぱい
+.full-width {
+  width: 100%;
+}
+
+// スマホで押しやすい大きさのボタン（高さ48px）
+.big-button {
+  min-height: 48px;
+}
+
+// 見出し（2行に折り返しても重ならないよう、行の高さを文字の大きさに合わせる）
+h1 {
+  font-size: 1.5rem;
+  line-height: 1.4;
+}
+
+h2 {
+  line-height: 1.4;
+}
+
+// 「コピーしました」などの表示を、下のタブバーに重ならない高さに出す
+.mat-mdc-snack-bar-container.above-tab-bar {
+  margin-bottom: 80px;
+}

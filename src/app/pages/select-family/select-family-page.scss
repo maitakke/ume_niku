@@ -1,0 +1,29 @@
+.room-name {
+  margin: 16px 0 0;
+  font-weight: bold;
+}
+
+.family-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.family-button {
+  font-size: 1rem;
+}
+
+.family-button.selected {
+  border-width: 2px;
+  font-weight: bold;
+}
+
+.hint {
+  margin-bottom: 24px;
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 1rem;
+}

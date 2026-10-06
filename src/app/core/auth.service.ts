@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Auth, signInAnonymously } from '@angular/fire/auth';
+import { injectFirebaseContext } from './firebase-context';
 
 /**
  * 匿名認証を担当するサービス。
@@ -8,6 +9,7 @@ import { Auth, signInAnonymously } from '@angular/fire/auth';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly auth = inject(Auth);
+  private readonly inFirebaseContext = injectFirebaseContext();
 
   /** サインイン中のユーザーID（まだなら null） */
   readonly uid = signal<string | null>(null);
@@ -26,7 +28,9 @@ export class AuthService {
       await this.auth.authStateReady();
 
       // 復元できなかったとき（初めて開いた端末など）だけ、新しく匿名サインインする
-      const user = this.auth.currentUser ?? (await signInAnonymously(this.auth)).user;
+      const user =
+        this.auth.currentUser ??
+        (await this.inFirebaseContext(() => signInAnonymously(this.auth))).user;
       this.uid.set(user.uid);
     } catch (error) {
       console.error('匿名サインインに失敗しました', error);

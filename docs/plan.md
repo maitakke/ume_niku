@@ -113,7 +113,12 @@ CheckRecord = `{ amount: number, checkedByFamilyId: string, checkedAt: Timestamp
 - 立て替えた支出がある家族、レンタル代を支払った家族は削除できない（理由を表示）
 - 担当になっている項目は「未定」と表示、家庭ごと数量は計算から除外
 
-## 9. 実装ステップ
+## 9. ライブラリのバージョン
+- Angular 20 / Angular Material 20 / AngularFire 20.1.0
+- Firebase SDK は **v11**（AngularFire 20.1.0 が v11 を前提にしているため。v12 を入れると2つの版が混ざって動かない）
+- ルールのテストは @firebase/rules-unit-testing v4（Firebase v11 用）
+
+## 10. 実装ステップ
 1. 土台：Angular 作成、Material 導入、Firebase プロジェクト作成、AngularFire 接続、匿名認証、全拒否ルール、Hosting 初回公開
 2. グループ作成・URLコピー・家族選択・タブの骨組み
 3. 家族タブ・役割分担タブ

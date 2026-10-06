@@ -1,0 +1,24 @@
+<main class="page">
+  <h1 class="title">うめにくBBQ</h1>
+  <p class="lead">
+    参加家族・役割分担・会計を、みんなで共有して管理できます。<br />
+    グループを作って、URLをLINEなどで送るだけ。登録は不要です。
+  </p>
+
+  <form class="card" [formGroup]="form" (ngSubmit)="createRoom()">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>グループ名</mat-label>
+      <input matInput [formControl]="nameControl" placeholder="例：11/1 みんなでBBQ" maxlength="50" />
+      <mat-hint align="end">{{ nameControl.value.length }} / 50</mat-hint>
+    </mat-form-field>
+
+    <button
+      mat-flat-button
+      type="submit"
+      class="full-width big-button"
+      [disabled]="!nameControl.value.trim() || creating()"
+    >
+      {{ creating() ? '作成中…' : '新しいグループを作る' }}
+    </button>
+  </form>
+</main>

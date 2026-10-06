@@ -34,6 +34,9 @@ jobs:
       - name: ユニットテスト
         run: npx ng test --watch=false --browsers=ChromeHeadlessNoSandbox
 
+      - name: セキュリティルールのテスト（Firestore エミュレーター）
+        run: npm run test:rules
+
       - name: ビルド
         run: npm run build
 

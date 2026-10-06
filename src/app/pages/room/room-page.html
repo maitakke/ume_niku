@@ -1,0 +1,17 @@
+@if (store.room() === undefined) {
+  <!-- 読み込み中 -->
+  <div class="center-box">
+    <mat-spinner diameter="40" />
+  </div>
+} @else if (store.room() === null) {
+  <!-- 存在しない roomId のとき -->
+  <main class="page">
+    <div class="card center-box">
+      <h1>グループが見つかりません</h1>
+      <p>URLが正しいか、送ってくれた人にもう一度確認してください。</p>
+      <a mat-stroked-button routerLink="/" class="big-button">トップページへ</a>
+    </div>
+  </main>
+} @else {
+  <router-outlet />
+}

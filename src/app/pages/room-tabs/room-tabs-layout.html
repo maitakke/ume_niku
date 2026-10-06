@@ -1,0 +1,31 @@
+<header class="header">
+  <div class="header-text">
+    <div class="room-name">{{ store.room()?.name }}</div>
+    <div class="current-family">
+      {{ store.currentFamily()?.name }} として参加中
+      <a class="change-link" [routerLink]="['/r', store.roomId(), 'select-family']">変更</a>
+    </div>
+  </div>
+  <button mat-stroked-button class="copy-button" (click)="copyUrl()">
+    <mat-icon>content_copy</mat-icon>
+    URLをコピー
+  </button>
+</header>
+
+<main class="page tab-content">
+  <router-outlet />
+</main>
+
+<nav class="tab-bar">
+  @for (tab of tabs; track tab.path) {
+    <a
+      class="tab"
+      [routerLink]="['/r', store.roomId(), tab.path]"
+      routerLinkActive="active"
+      ariaCurrentWhenActive="page"
+    >
+      <mat-icon>{{ tab.icon }}</mat-icon>
+      <span class="tab-label">{{ tab.label }}</span>
+    </a>
+  }
+</nav>

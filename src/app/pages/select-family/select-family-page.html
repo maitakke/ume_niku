@@ -1,0 +1,48 @@
+<main class="page">
+  <p class="room-name">{{ store.room()?.name }}</p>
+  <h1>あなたはどの家族ですか？</h1>
+
+  @if (store.families(); as families) {
+    <!-- 家族の一覧（押すと選ばれる） -->
+    @if (families.length > 0) {
+      <div class="family-list">
+        @for (family of families; track family.id) {
+          <button
+            mat-stroked-button
+            class="full-width big-button family-button"
+            [class.selected]="family.id === store.currentFamilyId()"
+            (click)="select(family.id)"
+          >
+            @if (family.id === store.currentFamilyId()) {
+              <mat-icon>check</mat-icon>
+            }
+            {{ family.name }}
+          </button>
+        }
+      </div>
+    } @else {
+      <p class="hint">まだ家族が登録されていません。下から追加してください。</p>
+    }
+
+    <!-- 新しい家族の追加 -->
+    <form class="card" [formGroup]="form" (ngSubmit)="addFamily()">
+      <h2>一覧にない場合は追加</h2>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>家族の名前</mat-label>
+        <input matInput [formControl]="nameControl" placeholder="例：田中家" maxlength="30" />
+      </mat-form-field>
+      <button
+        mat-flat-button
+        type="submit"
+        class="full-width big-button"
+        [disabled]="!nameControl.value.trim() || adding()"
+      >
+        {{ adding() ? '追加中…' : '追加して選ぶ' }}
+      </button>
+    </form>
+  } @else {
+    <div class="center-box">
+      <mat-spinner diameter="40" />
+    </div>
+  }
+</main>

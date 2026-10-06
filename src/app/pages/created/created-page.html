@@ -1,0 +1,22 @@
+<main class="page">
+  <div class="card">
+    <h1>グループを作りました！</h1>
+    <p class="room-name">{{ store.room()?.name }}</p>
+    <p>
+      下のURLをLINEなどで参加する家族に送ってください。<br />
+      URLを開いた人は、だれでも同じ内容を見たり入力したりできます。
+    </p>
+
+    <!-- 長押しでも選択・コピーできるように、URLを入力欄に表示しておく -->
+    <input class="url-box" [value]="roomUrl()" readonly (focus)="$any($event.target).select()" />
+
+    <button mat-flat-button class="full-width big-button" (click)="copyUrl()">
+      <mat-icon>content_copy</mat-icon>
+      URLをコピー
+    </button>
+
+    <a mat-stroked-button class="full-width big-button" [routerLink]="['/r', store.roomId()]">
+      グループに入る
+    </a>
+  </div>
+</main>

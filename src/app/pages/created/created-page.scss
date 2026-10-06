@@ -1,0 +1,18 @@
+.room-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.url-box {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 16px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+
+.big-button + .big-button {
+  margin-top: 12px;
+}

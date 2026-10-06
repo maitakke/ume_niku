@@ -1,11 +1,225 @@
 rules_version = '2';
 
-// Step 1 時点のルール：すべての読み書きを拒否する。
-// 機能を作るたびに、必要な場所だけを少しずつ許可していく。
+// うめにくBBQ の Firestore セキュリティルール
+// 方針（CLAUDE.md より）
+// - 匿名認証でサインインしていない人は何も読み書きできない
+// - rooms の一覧取得（list）は禁止。roomId を知っている人だけが、そのルームと配下を読み書きできる
+// - 書き込むデータの型や範囲をチェックする
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+
+    // ===== 共通の部品 =====
+
+    // 匿名認証でサインインしているか
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // roomId が「英数字20文字以上」（Firestore の自動ID）か
+    function isValidRoomId(roomId) {
+      return roomId.matches('^[A-Za-z0-9]{20,}$');
+    }
+
+    // ルームが存在するか
+    function roomExists(roomId) {
+      return exists(/databases/$(database)/documents/rooms/$(roomId));
+    }
+
+    // 文字列で、長さが min〜max か
+    function isText(value, min, max) {
+      return value is string && value.size() >= min && value.size() <= max;
+    }
+
+    // 0〜max の整数か
+    function isIntInRange(value, min, max) {
+      return value is int && value >= min && value <= max;
+    }
+
+    // 家族ID（文字列）か
+    function isFamilyId(value) {
+      return isText(value, 1, 40);
+    }
+
+    // 家族ID または null（未定）か
+    function isFamilyIdOrNull(value) {
+      return value == null || isFamilyId(value);
+    }
+
+    // 更新で変わったフィールドの一覧
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // 作成日時はサーバー時刻と一致すること（作成時）
+    function isCreatedNow(data) {
+      return data.createdAt == request.time;
+    }
+
+    // ===== rooms（グループ） =====
+    match /rooms/{roomId} {
+      // 1件取得はOK。一覧取得は禁止
+      allow get: if signedIn() && isValidRoomId(roomId);
+      allow list: if false;
+
+      allow create: if signedIn()
+        && isValidRoomId(roomId)
+        && request.resource.data.keys().hasOnly(['name', 'rentalPayerFamilyId', 'createdAt'])
+        && request.resource.data.keys().hasAll(['name', 'rentalPayerFamilyId', 'createdAt'])
+        && isText(request.resource.data.name, 1, 50)
+        && request.resource.data.rentalPayerFamilyId == null
+        && isCreatedNow(request.resource.data);
+
+      // 変更できるのは「レンタル代を支払った家族」だけ
+      allow update: if signedIn()
+        && changedKeys().hasOnly(['rentalPayerFamilyId'])
+        && isFamilyIdOrNull(request.resource.data.rentalPayerFamilyId);
+
+      // グループの削除はできない（削除する画面がないため）
+      allow delete: if false;
+
+      // ===== families（家族） =====
+      match /families/{familyId} {
+        allow read: if signedIn() && roomExists(roomId);
+
+        allow create: if signedIn() && roomExists(roomId)
+          && isValidFamily(request.resource.data)
+          && request.resource.data.collectionCheck == null
+          && request.resource.data.refundCheck == null
+          && isCreatedNow(request.resource.data);
+
+        allow update: if signedIn() && roomExists(roomId)
+          && isValidFamily(request.resource.data)
+          && request.resource.data.createdAt == resource.data.createdAt
+          && isCheckedNowIfChanged('collectionCheck')
+          && isCheckedNowIfChanged('refundCheck');
+
+        allow delete: if signedIn() && roomExists(roomId);
+      }
+
+      // ===== items（役割分担） =====
+      match /items/{itemId} {
+        allow read: if signedIn() && roomExists(roomId);
+
+        allow create: if signedIn() && roomExists(roomId)
+          && isValidItem(request.resource.data)
+          && isCreatedNow(request.resource.data);
+
+        allow update: if signedIn() && roomExists(roomId)
+          && isValidItem(request.resource.data)
+          // 作成日時・カテゴリ・分け方は変更できない
+          && !changedKeys().hasAny(['createdAt', 'category', 'splitType'])
+          && isSafeQuantitiesUpdate();
+
+        allow delete: if signedIn() && roomExists(roomId);
+      }
+
+      // ===== expenses（支出） =====
+      match /expenses/{expenseId} {
+        allow read: if signedIn() && roomExists(roomId);
+
+        allow create: if signedIn() && roomExists(roomId)
+          && isValidExpense(request.resource.data)
+          && isCreatedNow(request.resource.data);
+
+        // 編集はできるが、登録した家族と登録日時は変えられない
+        allow update: if signedIn() && roomExists(roomId)
+          && isValidExpense(request.resource.data)
+          && !changedKeys().hasAny(['createdAt', 'createdByFamilyId']);
+
+        allow delete: if signedIn() && roomExists(roomId);
+      }
+    }
+
+    // ===== 家族の中身のチェック =====
+
+    function isValidFamily(data) {
+      return data.keys().hasOnly(['name', 'adults', 'students', 'preschoolers', 'infants',
+                                  'memo', 'collectionCheck', 'refundCheck', 'createdAt'])
+        && data.keys().hasAll(['name', 'adults', 'students', 'preschoolers', 'infants',
+                               'memo', 'collectionCheck', 'refundCheck', 'createdAt'])
+        && isText(data.name, 1, 30)
+        && isIntInRange(data.adults, 0, 99)
+        && isIntInRange(data.students, 0, 99)
+        && isIntInRange(data.preschoolers, 0, 99)
+        && isIntInRange(data.infants, 0, 99)
+        && isText(data.memo, 0, 200)
+        && isValidCheck(data.collectionCheck)
+        && isValidCheck(data.refundCheck);
+    }
+
+    // 集金／返金チェックの記録：null（未チェック）または決まった形の記録
+    function isValidCheck(check) {
+      return check == null || (
+        check is map
+        && check.keys().hasOnly(['amount', 'checkedByFamilyId', 'checkedAt'])
+        && check.keys().hasAll(['amount', 'checkedByFamilyId', 'checkedAt'])
+        && isIntInRange(check.amount, 0, 10000000)
+        && isFamilyId(check.checkedByFamilyId)
+        && check.checkedAt is timestamp
+      );
+    }
+
+    // チェックをつけたときは、チェック日時がサーバー時刻と一致すること
+    function isCheckedNowIfChanged(field) {
+      return !changedKeys().hasAny([field])
+        || request.resource.data[field] == null
+        || request.resource.data[field].checkedAt == request.time;
+    }
+
+    // ===== 役割分担の中身のチェック =====
+
+    function isValidItem(data) {
+      return isText(data.name, 1, 50) && (
+        // 食材・持ち寄り物品
+        (
+          data.category in ['food', 'bring']
+          && data.keys().hasOnly(['category', 'name', 'createdAt', 'assigneeFamilyId', 'quantityText'])
+          && data.keys().hasAll(['category', 'name', 'createdAt', 'assigneeFamilyId', 'quantityText'])
+          && isFamilyIdOrNull(data.assigneeFamilyId)
+          && isText(data.quantityText, 0, 30)
+        )
+        // レンタル品・全体で割る
+        || (
+          data.category == 'rental' && data.splitType == 'shared'
+          && data.keys().hasOnly(['category', 'name', 'createdAt', 'splitType', 'unitPrice', 'quantity'])
+          && data.keys().hasAll(['category', 'name', 'createdAt', 'splitType', 'unitPrice', 'quantity'])
+          && isIntInRange(data.unitPrice, 0, 1000000)
+          && isIntInRange(data.quantity, 0, 999)
+        )
+        // レンタル品・家庭ごと
+        || (
+          data.category == 'rental' && data.splitType == 'perFamily'
+          && data.keys().hasOnly(['category', 'name', 'createdAt', 'splitType', 'unitPrice', 'quantities'])
+          && data.keys().hasAll(['category', 'name', 'createdAt', 'splitType', 'unitPrice', 'quantities'])
+          && isIntInRange(data.unitPrice, 0, 1000000)
+          && data.quantities is map
+          && data.quantities.size() <= 50
+        )
+      );
+    }
+
+    // 家庭ごとの数量（quantities）を変えるときは、1家族分のキーだけを変えること
+    // ※ ルールにはループがないため、マップの中の値がすべて整数かまでは確認できない（画面側でも確認する）
+    function isSafeQuantitiesUpdate() {
+      return !changedKeys().hasAny(['quantities'])
+        || (
+          changedKeys().hasOnly(['quantities'])
+          && request.resource.data.quantities.diff(resource.data.quantities).affectedKeys().size() <= 1
+        );
+    }
+
+    // ===== 支出の中身のチェック =====
+
+    function isValidExpense(data) {
+      return data.keys().hasOnly(['payerFamilyId', 'amount', 'category', 'description',
+                                  'createdByFamilyId', 'createdAt'])
+        && data.keys().hasAll(['payerFamilyId', 'amount', 'category', 'description',
+                               'createdByFamilyId', 'createdAt'])
+        && isFamilyId(data.payerFamilyId)
+        && isIntInRange(data.amount, 1, 1000000)
+        && data.category in ['food', 'drink', 'equipment', 'venue', 'other']
+        && isText(data.description, 0, 50)
+        && isFamilyId(data.createdByFamilyId);
     }
   }
 }

@@ -1,0 +1,74 @@
+// 上のヘッダー（スクロールしても上に固定）
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--mat-sys-surface);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.header-text {
+  flex: 1;
+  min-width: 0; // 長いグループ名を「…」で省略するため
+}
+
+.room-name {
+  overflow: hidden;
+  font-weight: bold;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.current-family {
+  font-size: 0.8rem;
+}
+
+.change-link {
+  margin-left: 4px;
+}
+
+.copy-button {
+  flex-shrink: 0;
+  min-height: 44px;
+}
+
+// 下のタブバーに隠れないよう、中身の下に余白をとる
+.tab-content {
+  padding-bottom: 96px;
+}
+
+// 下のタブバー（画面下に固定）
+.tab-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom); // iPhone の下のバーをよける
+  background: var(--mat-sys-surface);
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
+.tab {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  color: var(--mat-sys-on-surface-variant);
+  text-decoration: none;
+}
+
+.tab.active {
+  color: var(--mat-sys-primary);
+  font-weight: bold;
+}
+
+.tab-label {
+  font-size: 0.7rem;
+}
