@@ -1,0 +1,11 @@
+<!-- Step 1 の動作確認用の仮画面。Step 2 でトップページに置き換える -->
+<main class="step1-check">
+  <h1>うめにくBBQ</h1>
+  @if (auth.errorMessage(); as message) {
+    <p class="error">{{ message }}</p>
+  } @else {
+    <p>サインイン済み：ユーザーID {{ auth.uid() }}</p>
+  }
+</main>
+
+<router-outlet />
