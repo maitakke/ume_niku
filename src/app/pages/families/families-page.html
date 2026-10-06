@@ -1,0 +1,88 @@
+<h1>家族</h1>
+
+<!-- 全体の集計 -->
+<section class="card summary">
+  <div class="summary-grid">
+    @for (category of categories; track category.key) {
+      <div class="summary-cell">
+        <div class="summary-label">{{ category.label }}</div>
+        <div class="summary-value">{{ store.peopleSummary().counts[category.key] }}<small>人</small></div>
+      </div>
+    }
+  </div>
+  <div class="summary-totals">
+    <div>
+      <span class="summary-label">総合計</span>
+      <strong>{{ store.peopleSummary().total }}人</strong>
+    </div>
+    <div>
+      <span class="summary-label">精算対象人数</span>
+      <strong class="weighted">{{ store.peopleSummary().weightedTotal }}人分</strong>
+    </div>
+  </div>
+  <p class="note">精算対象人数は「大人1・小中学生0.5・幼児0.5・乳児0」で数えた人数です。</p>
+</section>
+
+<!-- 家族の追加 -->
+@if (adding()) {
+  <section class="card">
+    <h2>家族を追加</h2>
+    <app-family-form
+      submitLabel="追加する"
+      [saving]="saving()"
+      (save)="add($event)"
+      (cancel)="adding.set(false)"
+    />
+  </section>
+} @else {
+  <button mat-flat-button class="full-width big-button add-button" (click)="adding.set(true)">
+    <mat-icon>add</mat-icon>
+    家族を追加
+  </button>
+}
+
+<!-- 家族の一覧 -->
+@for (family of store.families(); track family.id) {
+  <section class="card family-card" [class.mine]="family.id === store.currentFamilyId()">
+    @if (editingId() === family.id) {
+      <h2>{{ family.name }} を編集</h2>
+      <app-family-form
+        [initial]="toInput(family)"
+        [saving]="saving()"
+        (save)="update(family, $event)"
+        (cancel)="editingId.set(null)"
+      />
+    } @else {
+      <div class="family-header">
+        <span class="family-name">{{ family.name }}</span>
+        @if (family.id === store.currentFamilyId()) {
+          <span class="mine-tag">あなたの家族</span>
+        }
+        <span class="family-total">
+          {{ settlement.familyTotal(family) }}人
+          <small>（精算 {{ settlement.familyWeight(family) }}人分）</small>
+        </span>
+      </div>
+      <div class="family-counts">
+        @for (category of categories; track category.key) {
+          <span>{{ category.label }} {{ family[category.key] }}</span>
+        }
+      </div>
+      @if (family.memo) {
+        <p class="memo">{{ family.memo }}</p>
+      }
+      <div class="family-actions">
+        <button mat-button (click)="editingId.set(family.id)">
+          <mat-icon>edit</mat-icon>
+          編集
+        </button>
+        <button mat-button class="delete-button" (click)="remove(family)">
+          <mat-icon>delete</mat-icon>
+          削除
+        </button>
+      </div>
+    }
+  </section>
+} @empty {
+  <p class="empty">まだ家族が登録されていません。</p>
+}

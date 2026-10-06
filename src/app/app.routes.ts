@@ -5,10 +5,6 @@ import { RoomPage } from './pages/room/room-page';
 import { CreatedPage } from './pages/created/created-page';
 import { SelectFamilyPage } from './pages/select-family/select-family-page';
 import { RoomTabsLayout } from './pages/room-tabs/room-tabs-layout';
-import { DashboardPage } from './pages/dashboard/dashboard-page';
-import { FamiliesPage } from './pages/families/families-page';
-import { RolesPage } from './pages/roles/roles-page';
-import { AccountingPage } from './pages/accounting/accounting-page';
 import { NotFoundPage } from './pages/not-found/not-found-page';
 
 /**
@@ -18,6 +14,8 @@ import { NotFoundPage } from './pages/not-found/not-found-page';
  * /r/:roomId/created        作成完了（共有URLのコピー）
  * /r/:roomId/select-family  どの家族ですか？
  * /r/:roomId/dashboard など  グループ内のタブ（家族を選んでいないと select-family へ）
+ *
+ * タブの中身は loadComponent で「開いたときに読み込む」ようにして、最初の表示を軽くしている
  */
 export const routes: Routes = [
   { path: '', component: HomePage, title: 'うめにくBBQ' },
@@ -34,10 +32,29 @@ export const routes: Routes = [
         canActivate: [familySelectedGuard],
         children: [
           { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-          { path: 'dashboard', component: DashboardPage, title: 'ダッシュボード' },
-          { path: 'families', component: FamiliesPage, title: '家族' },
-          { path: 'roles', component: RolesPage, title: '役割分担' },
-          { path: 'accounting', component: AccountingPage, title: '会計' },
+          {
+            path: 'dashboard',
+            loadComponent: () =>
+              import('./pages/dashboard/dashboard-page').then((m) => m.DashboardPage),
+            title: 'ダッシュボード',
+          },
+          {
+            path: 'families',
+            loadComponent: () =>
+              import('./pages/families/families-page').then((m) => m.FamiliesPage),
+            title: '家族',
+          },
+          {
+            path: 'roles',
+            loadComponent: () => import('./pages/roles/roles-page').then((m) => m.RolesPage),
+            title: '役割分担',
+          },
+          {
+            path: 'accounting',
+            loadComponent: () =>
+              import('./pages/accounting/accounting-page').then((m) => m.AccountingPage),
+            title: '会計',
+          },
         ],
       },
     ],

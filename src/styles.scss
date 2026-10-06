@@ -201,3 +201,42 @@ a {
 .mat-mdc-snack-bar-container.above-tab-bar {
   margin-bottom: 80px;
 }
+
+// 切り替えボタン（食材／持ち寄り／レンタル、分け方など）
+.segmented {
+  display: flex;
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+}
+
+.segmented button {
+  flex: 1;
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-sub);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.segmented button.on {
+  background: var(--color-main-soft);
+  color: var(--color-main-text);
+  font-weight: 900;
+}
+
+// フォームの中の切り替えボタンは、うすいミントの背景にのせる
+form .segmented {
+  background: var(--color-item);
+}
+
+// ダイアログの角丸
+html {
+  @include mat.dialog-overrides((
+    container-shape: var(--radius-card),
+  ));
+}

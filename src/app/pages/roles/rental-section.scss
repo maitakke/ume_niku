@@ -1,0 +1,149 @@
+.payer {
+  margin-bottom: -8px;
+}
+
+// 「未定」のときの注意
+.warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.warning mat-icon {
+  flex-shrink: 0;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+// ===== レンタル品カード =====
+.rental-card {
+  border-left: 6px solid var(--color-main);
+}
+
+.rental-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rental-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.1rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.split-tag {
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-main-soft);
+  color: var(--color-main-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.unit-price {
+  margin: 0 0 8px;
+  color: var(--color-text-sub);
+  font-size: 0.9rem;
+}
+
+.formula {
+  margin-top: 8px;
+  text-align: right;
+}
+
+.formula strong {
+  color: var(--color-main-text);
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+// 家族ごとの行
+.family-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 4px 8px;
+  border-radius: var(--radius-control);
+}
+
+// 自分の家族の行は、ミントの背景と枠で目立たせる
+.family-row.mine {
+  margin: 4px 0;
+  background: var(--color-main-soft);
+  outline: 2px solid var(--color-main);
+}
+
+.family-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+// 自分の家族の名前の下に出す「あなた」
+.you-tag {
+  display: block;
+  width: fit-content;
+  padding: 0 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-main-text);
+  color: #fff;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+// 他の家族の数量（表示だけ）。自分の行の －／＋ と位置をそろえる
+.other-quantity {
+  width: 136px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.family-amount {
+  width: 5.5em;
+  text-align: right;
+}
+
+.delete-button {
+  --mat-button-text-label-text-color: var(--color-error);
+  min-height: 44px;
+  margin-top: 4px;
+}
+
+.empty {
+  color: var(--color-text-sub);
+  text-align: center;
+}
+
+// ===== 合計 =====
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.total-row.grand {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 2px dashed var(--color-line);
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.total-row.grand span:last-child {
+  color: var(--color-main-text);
+}

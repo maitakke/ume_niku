@@ -1,0 +1,82 @@
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: var(--color-text-sub);
+  font-weight: 700;
+}
+
+// 1行（押すと編集になる）
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border: 0;
+  border-left: 5px solid var(--color-main);
+  border-radius: var(--radius-control);
+  background: var(--color-item);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.item.editing {
+  display: block;
+  padding: 12px;
+  cursor: default;
+}
+
+.item-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.assignee {
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-size: 0.85rem;
+}
+
+// 自分の家族が担当のものは、ミント色で目立たせる
+.assignee.mine {
+  background: var(--color-main-soft);
+  color: var(--color-main-text);
+  font-weight: 700;
+}
+
+.quantity {
+  max-width: 6em;
+  color: var(--color-text-sub);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.edit-icon {
+  color: var(--color-line);
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.delete-button {
+  --mat-button-text-label-text-color: var(--color-error);
+  min-height: 44px;
+  margin-top: 4px;
+}
+
+.empty {
+  color: var(--color-text-sub);
+  text-align: center;
+}

@@ -256,6 +256,20 @@ describe('items（役割分担）', () => {
     );
   });
 
+  it('担当を「未定」に戻せる（家族を削除するとき）', async () => {
+    const db = signedInDb();
+    await setDoc(doc(db, 'rooms', ROOM_ID, 'items', 'meat'), {
+      category: 'food',
+      name: '牛肉',
+      assigneeFamilyId: 'family-1',
+      quantityText: '2kg',
+      createdAt: serverTimestamp(),
+    });
+    await assertSucceeds(
+      updateDoc(doc(db, 'rooms', ROOM_ID, 'items', 'meat'), { assigneeFamilyId: null }),
+    );
+  });
+
   it('全体で割るレンタル品を追加できる', async () => {
     await assertSucceeds(
       setDoc(doc(signedInDb(), 'rooms', ROOM_ID, 'items', 'grill'), {
@@ -294,6 +308,28 @@ describe('items（役割分担）', () => {
     await assertFails(
       updateDoc(doc(signedInDb(), 'rooms', ROOM_ID, 'items', 'chair'), {
         quantities: { 'family-1': 5, 'family-2': 5 },
+      }),
+    );
+  });
+
+  it('家庭ごとのレンタル品は、数量が空の状態で追加できる', async () => {
+    await assertSucceeds(
+      setDoc(doc(signedInDb(), 'rooms', ROOM_ID, 'items', 'tent'), {
+        category: 'rental',
+        name: 'テント',
+        splitType: 'perFamily',
+        unitPrice: 2000,
+        quantities: {},
+        createdAt: serverTimestamp(),
+      }),
+    );
+  });
+
+  it('家庭ごとのレンタル品の品名と単価は、数量に触れずに編集できる', async () => {
+    await assertSucceeds(
+      updateDoc(doc(signedInDb(), 'rooms', ROOM_ID, 'items', 'chair'), {
+        name: 'ローチェア',
+        unitPrice: 350,
       }),
     );
   });

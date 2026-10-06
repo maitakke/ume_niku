@@ -6,6 +6,7 @@ import {
   doc,
   docData,
   serverTimestamp,
+  updateDoc,
 } from '@angular/fire/firestore';
 import { Observable, catchError, map, of } from 'rxjs';
 import { Room } from '../models/room';
@@ -49,6 +50,13 @@ export class RoomService {
         console.error('グループを読み込めませんでした', error);
         return of(null);
       }),
+    );
+  }
+
+  /** レンタル代を支払った家族を設定する（未定なら null） */
+  async setRentalPayer(roomId: string, familyId: string | null): Promise<void> {
+    await this.inFirebaseContext(() =>
+      updateDoc(doc(this.firestore, 'rooms', roomId), { rentalPayerFamilyId: familyId }),
     );
   }
 }

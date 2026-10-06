@@ -1,0 +1,140 @@
+// ===== 全体の集計 =====
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+
+.summary-cell {
+  padding: 8px 0;
+  border-radius: var(--radius-control);
+  background: var(--color-item);
+}
+
+.summary-label {
+  color: var(--color-text-sub);
+  font-size: 0.8rem;
+}
+
+.summary-value {
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+
+.summary-value small {
+  font-size: 0.75rem;
+}
+
+.summary-totals {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.summary-totals div {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-totals strong {
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.weighted {
+  color: var(--color-main-text);
+}
+
+.note {
+  margin: 12px 0 0;
+  color: var(--color-text-sub);
+  font-size: 0.75rem;
+}
+
+// ===== 追加ボタン =====
+.add-button {
+  margin-bottom: 20px;
+}
+
+h2 {
+  margin-top: 0;
+}
+
+// ===== 家族カード =====
+.family-card {
+  border-left: 6px solid var(--color-main);
+}
+
+// あなたの家族は、背景をうすいミントにして目立たせる
+.family-card.mine {
+  background: linear-gradient(var(--color-main-soft), var(--color-surface) 70%);
+}
+
+.family-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.family-name {
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.mine-tag {
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-main-text);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.family-total {
+  margin-left: auto;
+  font-weight: 700;
+}
+
+.family-total small {
+  color: var(--color-text-sub);
+  font-weight: 500;
+}
+
+.family-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 4px;
+  color: var(--color-text-sub);
+  font-size: 0.9rem;
+}
+
+.memo {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  background: var(--color-item);
+  font-size: 0.9rem;
+}
+
+.family-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.family-actions button {
+  min-height: 44px;
+}
+
+.delete-button {
+  --mat-button-text-label-text-color: var(--color-error);
+}
+
+.empty {
+  text-align: center;
+}

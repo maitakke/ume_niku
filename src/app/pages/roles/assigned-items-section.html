@@ -1,0 +1,54 @@
+<!-- 入力欄と追加ボタン -->
+<section class="card">
+  <app-assigned-item-form
+    [families]="store.families() ?? []"
+    [namePlaceholder]="category() === 'food' ? '例：牛肉' : '例：クーラーボックス'"
+    [saving]="saving()"
+    (save)="add($event)"
+  />
+</section>
+
+<!-- 一覧 -->
+<section class="card">
+  <div class="list-header">
+    <span>全{{ items().length }}件</span>
+    @if (undecidedCount() > 0) {
+      <span class="tag-accent">未定 {{ undecidedCount() }}件</span>
+    }
+  </div>
+
+  @for (item of items(); track item.id) {
+    @if (editingId() === item.id) {
+      <div class="item editing">
+        <app-assigned-item-form
+          [families]="store.families() ?? []"
+          [initial]="toInput(item)"
+          submitLabel="保存"
+          [showCancel]="true"
+          [saving]="saving()"
+          (save)="update(item, $event)"
+          (cancel)="editingId.set(null)"
+        />
+        <button mat-button class="delete-button" (click)="remove(item)">
+          <mat-icon>delete</mat-icon>
+          削除
+        </button>
+      </div>
+    } @else {
+      <button class="item" (click)="editingId.set(item.id)" [attr.aria-label]="item.name + 'を編集'">
+        <span class="item-name">{{ item.name }}</span>
+        @if (isUndecided(item)) {
+          <span class="tag-accent">未定</span>
+        } @else {
+          <span class="assignee" [class.mine]="item.assigneeFamilyId === store.currentFamilyId()">
+            {{ store.familyName(item.assigneeFamilyId) }}
+          </span>
+        }
+        <span class="quantity">{{ item.quantityText }}</span>
+        <mat-icon class="edit-icon">edit</mat-icon>
+      </button>
+    }
+  } @empty {
+    <p class="empty">まだ登録されていません。上から追加してください。</p>
+  }
+</section>

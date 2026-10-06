@@ -1,0 +1,106 @@
+<!-- レンタル代を支払った家族 -->
+<section class="card">
+  <mat-form-field appearance="outline" class="full-width payer">
+    <mat-label>レンタル代を支払った家族</mat-label>
+    <mat-select [value]="payerId() ?? undecided" (selectionChange)="setPayer($event.value)">
+      <mat-option [value]="undecided">未定</mat-option>
+      @for (family of store.families(); track family.id) {
+        <mat-option [value]="family.id">{{ family.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  @if (payerId() === null) {
+    <p class="warning">
+      <mat-icon>info</mat-icon>
+      支払った家族が「未定」のあいだは、レンタル代は精算に入りません。
+    </p>
+  }
+</section>
+
+<!-- 入力欄と追加ボタン -->
+<section class="card">
+  <app-rental-item-form [saving]="saving()" (save)="add($event)" />
+</section>
+
+<!-- 一覧 -->
+@for (item of items(); track item.id) {
+  <section class="card rental-card">
+    @if (editingId() === item.id) {
+      <app-rental-item-form
+        [initial]="toFormValue(item)"
+        submitLabel="保存"
+        [showCancel]="true"
+        [saving]="saving()"
+        (save)="update(item, $event)"
+        (cancel)="editingId.set(null)"
+      />
+      <button mat-button class="delete-button" (click)="remove(item)">
+        <mat-icon>delete</mat-icon>
+        削除
+      </button>
+    } @else {
+      <div class="rental-header">
+        <span class="rental-name">{{ item.name }}</span>
+        <span class="split-tag">{{ item.splitType === 'shared' ? '全体で割る' : '家庭ごと' }}</span>
+        <button mat-icon-button (click)="editingId.set(item.id)" [attr.aria-label]="item.name + 'を編集'">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </div>
+
+      @if (item.splitType === 'shared') {
+        <!-- 全体で割る -->
+        <div class="formula">
+          {{ item.unitPrice | yen }} × {{ item.quantity }} =
+          <strong>{{ settlement.sharedSubtotal(item) | yen }}</strong>
+        </div>
+      } @else {
+        <!-- 家庭ごと：全家族の行に －／＋ を並べる（押せるのは自分の家族の行だけ） -->
+        <p class="unit-price">単価 {{ item.unitPrice | yen }}</p>
+        @for (family of store.families(); track family.id) {
+          @let mine = family.id === store.currentFamilyId();
+          <div class="family-row" [class.mine]="mine">
+            <span class="family-name">
+              {{ family.name }}
+              @if (mine) {
+                <small class="you-tag">あなた</small>
+              }
+            </span>
+            @if (mine) {
+              <app-count-stepper
+                [value]="settlement.familyQuantity(item, family.id)"
+                [max]="maxQuantity"
+                [label]="item.name + 'の数量'"
+                (valueChange)="setMyQuantity(item, $event)"
+              />
+            } @else {
+              <span class="other-quantity">{{ settlement.familyQuantity(item, family.id) }}</span>
+            }
+            <span class="family-amount">{{ settlement.familyAmount(item, family.id) | yen }}</span>
+          </div>
+        }
+        <div class="formula">
+          合計 {{ settlement.perFamilyTotalQuantity(item, store.families() ?? []) }}個 ・ 小計
+          <strong>{{ settlement.perFamilySubtotal(item, store.families() ?? []) | yen }}</strong>
+        </div>
+      }
+    }
+  </section>
+} @empty {
+  <p class="empty">まだレンタル品が登録されていません。</p>
+}
+
+<!-- 合計 -->
+<section class="card totals">
+  <div class="total-row">
+    <span>全体で割る分</span>
+    <span>{{ store.rentalSummary().sharedTotal | yen }}</span>
+  </div>
+  <div class="total-row">
+    <span>家庭ごとの分</span>
+    <span>{{ store.rentalSummary().perFamilyTotal | yen }}</span>
+  </div>
+  <div class="total-row grand">
+    <span>レンタル品の合計</span>
+    <span>{{ store.rentalSummary().total | yen }}</span>
+  </div>
+</section>
