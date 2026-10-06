@@ -14,6 +14,7 @@ export const PERSON_CATEGORIES: { key: PersonCategory; label: string }[] = [
 /**
  * 精算の重み（1人あたり何人分を負担するか）
  * ※ 重みを変えるときは、ここだけを直す
+ * ※ 計算で小数の誤差を出さないため、重みは 0.5 刻みで指定すること
  */
 export const SETTLEMENT_WEIGHTS: Record<PersonCategory, number> = {
   adults: 1,
@@ -50,3 +51,21 @@ export const MAX_RENTAL_QUANTITY = 999;
  * 画面の中だけこの値を使い、保存するときに null に戻す。
  */
 export const UNDECIDED = '__undecided__';
+
+/** 支出のカテゴリ */
+export type ExpenseCategory = 'food' | 'drink' | 'equipment' | 'venue' | 'other';
+
+/** 支出のカテゴリの並び順と表示名 */
+export const EXPENSE_CATEGORIES: { key: ExpenseCategory; label: string }[] = [
+  { key: 'food', label: '食材' },
+  { key: 'drink', label: '飲み物' },
+  { key: 'equipment', label: '備品' },
+  { key: 'venue', label: '会場' },
+  { key: 'other', label: 'その他' },
+];
+
+/** 支出1件の金額の上限（円） */
+export const MAX_EXPENSE_AMOUNT = 1_000_000;
+
+/** 集金額を切り上げる単位（円） */
+export const COLLECTION_ROUNDING_UNIT = 100;

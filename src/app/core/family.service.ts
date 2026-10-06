@@ -5,13 +5,10 @@ import {
   collection,
   collectionData,
   doc,
-  getDocs,
-  limit,
   orderBy,
   query,
   serverTimestamp,
   updateDoc,
-  where,
   writeBatch,
 } from '@angular/fire/firestore';
 import { Observable, catchError, map, of } from 'rxjs';
@@ -27,6 +24,9 @@ export interface FamilyInput {
   infants: number;
   memo: string;
 }
+
+/** チェックの種類（集金 / 返金） */
+export type CheckKind = 'collectionCheck' | 'refundCheck';
 
 /** 参加家族（rooms/{roomId}/families）の読み書きを担当するサービス */
 @Injectable({ providedIn: 'root' })
@@ -88,20 +88,6 @@ export class FamilyService {
     await this.inFirebaseContext(() => updateDoc(this.familyRef(roomId, familyId), { ...input }));
   }
 
-  /** その家族が立て替えた支出が1件でもあるか */
-  async hasExpenses(roomId: string, familyId: string): Promise<boolean> {
-    const snapshot = await this.inFirebaseContext(() =>
-      getDocs(
-        query(
-          collection(this.firestore, 'rooms', roomId, 'expenses'),
-          where('payerFamilyId', '==', familyId),
-          limit(1),
-        ),
-      ),
-    );
-    return !snapshot.empty;
-  }
-
   /**
    * 家族を削除する。
    * その家族が担当していた品目（assignedItemIds）は、同時に担当を「未定」に戻す。
@@ -118,5 +104,30 @@ export class FamilyService {
       batch.delete(this.familyRef(roomId, familyId));
       return batch.commit();
     });
+  }
+
+  /**
+   * 集金・返金のチェックをつける。
+   * チェックした時点の金額・チェックした家族・日時（サーバー時刻）を記録する。
+   */
+  async check(
+    roomId: string,
+    familyId: string,
+    kind: CheckKind,
+    amount: number,
+    checkedByFamilyId: string,
+  ): Promise<void> {
+    await this.inFirebaseContext(() =>
+      updateDoc(this.familyRef(roomId, familyId), {
+        [kind]: { amount, checkedByFamilyId, checkedAt: serverTimestamp() },
+      }),
+    );
+  }
+
+  /** 集金・返金のチェックを外す（記録も消す） */
+  async uncheck(roomId: string, familyId: string, kind: CheckKind): Promise<void> {
+    await this.inFirebaseContext(() =>
+      updateDoc(this.familyRef(roomId, familyId), { [kind]: null }),
+    );
   }
 }

@@ -1,0 +1,152 @@
+<h1>会計</h1>
+
+<!-- 1. 支出の登録 -->
+<section class="card">
+  <h2>立て替えた支出を登録</h2>
+  <app-expense-form
+    [families]="store.families() ?? []"
+    [defaultPayerId]="store.currentFamilyId()"
+    [saving]="saving()"
+    (save)="add($event)"
+  />
+  <p class="small-note">
+    ※ レンタル代は「役割分担」タブで管理するため、ここには登録しないでください。
+  </p>
+</section>
+
+<!-- 2. 支出一覧 -->
+<section class="card">
+  <h2 class="list-title">
+    支出一覧
+    <span class="list-total">合計 {{ expenseTotal() | yen }}</span>
+  </h2>
+  @for (expense of store.expenses(); track expense.id) {
+    @if (editingId() === expense.id) {
+      <div class="expense editing">
+        <app-expense-form
+          [families]="store.families() ?? []"
+          [initial]="toInput(expense)"
+          submitLabel="保存"
+          [showCancel]="true"
+          [saving]="saving()"
+          (save)="update(expense, $event)"
+          (cancel)="editingId.set(null)"
+        />
+        <div class="editing-footer">
+          <span class="created-by">登録：{{ store.familyName(expense.createdByFamilyId) }}</span>
+          <button mat-button class="delete-button" (click)="remove(expense)">
+            <mat-icon>delete</mat-icon>
+            削除
+          </button>
+        </div>
+      </div>
+    } @else {
+      <button
+        class="expense"
+        (click)="editingId.set(expense.id)"
+        [attr.aria-label]="(expense.description || categoryLabel(expense)) + 'を編集'"
+      >
+        <span class="category-tag">{{ categoryLabel(expense) }}</span>
+        <span class="expense-text">
+          <span class="expense-description">{{ expense.description || '（内容なし）' }}</span>
+          <span class="expense-payer">{{ store.familyName(expense.payerFamilyId) }}が立替</span>
+        </span>
+        <span class="expense-amount">{{ expense.amount | yen }}</span>
+      </button>
+    }
+  } @empty {
+    <p class="empty">まだ支出が登録されていません。</p>
+  }
+</section>
+
+<!-- 3. 精算のまとめ -->
+<section class="card summary">
+  <h2>精算のまとめ</h2>
+
+  @if (result().rentalExcluded) {
+    <p class="warning">
+      <mat-icon>warning</mat-icon>
+      レンタル代を支払った家族が「未定」のため、レンタル品（{{ result().excludedRentalTotal | yen }}）を除いて計算しています。役割分担タブで支払った家族を選んでください。
+    </p>
+  }
+  @if (result().noWeight) {
+    <p class="warning">
+      <mat-icon>warning</mat-icon>
+      精算対象人数が0人のため、共通費を割り振れません。家族タブで人数を入力してください。
+    </p>
+  }
+
+  <div class="summary-numbers">
+    <div class="summary-cell">
+      <span class="summary-label">集金合計</span>
+      <strong>{{ result().collectTotal | yen }}</strong>
+    </div>
+    <div class="summary-cell">
+      <span class="summary-label">返金合計</span>
+      <strong>{{ result().refundTotal | yen }}</strong>
+    </div>
+    <div class="summary-cell surplus">
+      <span class="summary-label">余剰金</span>
+      <strong>{{ result().surplus | yen }}</strong>
+    </div>
+  </div>
+
+  <dl class="breakdown">
+    <div>
+      <dt>支出の合計</dt>
+      <dd>{{ result().expenseTotal | yen }}</dd>
+    </div>
+    <div>
+      <dt>レンタル品の合計</dt>
+      <dd>{{ result().rental.total | yen }}</dd>
+    </div>
+    <div class="breakdown-total">
+      <dt>かかった費用の合計</dt>
+      <dd>{{ result().expenseTotal + result().rental.total | yen }}</dd>
+    </div>
+    <div>
+      <dt>レンタル代を支払った家族</dt>
+      <dd>{{ store.rentalPayer()?.name ?? '未定' }}</dd>
+    </div>
+  </dl>
+  <p class="small-note">
+    集金額は100円単位で切り上げています。余剰金はその切り上げ分の余りです。
+  </p>
+</section>
+
+<!-- 4. 集金 -->
+<app-check-list kind="collectionCheck" title="集金" [rows]="collectionRows()" />
+
+<!-- 5. 返金 -->
+<app-check-list kind="refundCheck" title="返金" [rows]="refundRows()" />
+
+<!-- 6. 家族ごとの明細（最初は折りたたみ） -->
+<details class="card details">
+  <summary>家族ごとの明細</summary>
+  @for (row of result().families; track row.family.id) {
+    <div class="detail-card">
+      <div class="detail-name">{{ row.family.name }}</div>
+      <dl class="detail-grid">
+        <dt>精算対象人数</dt>
+        <dd>{{ row.weight }}人分</dd>
+        <dt>共通費の負担額</dt>
+        <dd>{{ row.commonShare | yen }}</dd>
+        <dt>家庭ごとレンタル</dt>
+        <dd>{{ row.perFamilyRental | yen }}</dd>
+        <dt>負担額</dt>
+        <dd>{{ row.burden | yen }}</dd>
+        <dt>集金額</dt>
+        <dd class="strong">{{ row.collectAmount | yen }}</dd>
+        <dt>立替額（返金額）</dt>
+        <dd class="strong">{{ row.refundAmount | yen }}</dd>
+        <dt>差引</dt>
+        <dd class="balance" [class.plus]="row.balance > 0" [class.minus]="row.balance < 0">
+          {{ signedYen(row.balance) }}
+        </dd>
+      </dl>
+    </div>
+  }
+  <p class="small-note">
+    差引 ＝ 返金額 − 集金額。プラスは受け取る額、マイナスは支払う額です。立て替えた家族は、差引だけをやり取りしても構いません。
+  </p>
+</details>

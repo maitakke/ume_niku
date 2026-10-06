@@ -238,6 +238,22 @@ describe('families（家族）', () => {
     );
   });
 
+  it('集金チェックを外せる（記録を消す）', async () => {
+    const ref = doc(signedInDb(), 'rooms', ROOM_ID, 'families', 'family-1');
+    await updateDoc(ref, {
+      collectionCheck: { amount: 6000, checkedByFamilyId: 'family-1', checkedAt: serverTimestamp() },
+    });
+    await assertSucceeds(updateDoc(ref, { collectionCheck: null }));
+  });
+
+  it('チェックの金額がマイナスだと記録できない', async () => {
+    await assertFails(
+      updateDoc(doc(signedInDb(), 'rooms', ROOM_ID, 'families', 'family-1'), {
+        refundCheck: { amount: -100, checkedByFamilyId: 'family-1', checkedAt: serverTimestamp() },
+      }),
+    );
+  });
+
   it('削除できる', async () => {
     await assertSucceeds(deleteDoc(doc(signedInDb(), 'rooms', ROOM_ID, 'families', 'family-1')));
   });

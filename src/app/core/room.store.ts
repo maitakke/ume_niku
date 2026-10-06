@@ -4,10 +4,12 @@ import { Observable, distinctUntilChanged, filter, map, of, switchMap } from 'rx
 import { RoomService } from './room.service';
 import { FamilyService } from './family.service';
 import { ItemService } from './item.service';
+import { ExpenseService } from './expense.service';
 import { CurrentFamilyService } from './current-family.service';
 import { SettlementService } from './settlement.service';
 import { Family } from '../models/family';
 import { Item } from '../models/item';
+import { Expense } from '../models/expense';
 
 /**
  * 開いているグループのデータを、画面どうしで共有するための入れ物。
@@ -20,6 +22,7 @@ export class RoomStore {
   private readonly roomService = inject(RoomService);
   private readonly familyService = inject(FamilyService);
   private readonly itemService = inject(ItemService);
+  private readonly expenseService = inject(ExpenseService);
   private readonly currentFamilyService = inject(CurrentFamilyService);
   private readonly settlement = inject(SettlementService);
 
@@ -40,6 +43,11 @@ export class RoomStore {
   /** 役割分担の一覧。読み込み中は undefined（グループが見つからないときは空） */
   readonly items = toSignal(
     this.whenRoomExists((id) => this.itemService.watchItems(id), [] as Item[]),
+  );
+
+  /** 支出の一覧。読み込み中は undefined（グループが見つからないときは空） */
+  readonly expenses = toSignal(
+    this.whenRoomExists((id) => this.expenseService.watchExpenses(id), [] as Expense[]),
   );
 
   /** この端末で選ばれている家族のID */
@@ -64,6 +72,16 @@ export class RoomStore {
   /** レンタル品の集計（全体で割る分・家庭ごとの分・合計） */
   readonly rentalSummary = computed(() =>
     this.settlement.summarizeRentals(this.items() ?? [], this.families() ?? []),
+  );
+
+  /** 精算の結果（家族ごとの集金額・返金額など） */
+  readonly settlementResult = computed(() =>
+    this.settlement.settle({
+      families: this.families() ?? [],
+      items: this.items() ?? [],
+      expenses: this.expenses() ?? [],
+      rentalPayerFamilyId: this.room()?.rentalPayerFamilyId ?? null,
+    }),
   );
 
   /** レンタル代を支払った家族（未定、または削除済みなら null） */

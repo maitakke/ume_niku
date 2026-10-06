@@ -1,0 +1,59 @@
+<section class="card">
+  <h2 class="title">
+    {{ title() }}
+    <span class="progress">
+      {{ progressWord() }} {{ progress().checkedCount }} / {{ progress().totalCount }}家族
+      <span class="progress-amount">
+        {{ progress().checkedAmount | yen }} / {{ progress().totalAmount | yen }}
+      </span>
+    </span>
+  </h2>
+
+  @for (row of rows(); track row.family.id) {
+    @let checkRecord = record(row);
+    <div class="row" [class.done]="checkRecord !== null">
+      <div class="row-main">
+        <div class="row-text">
+          <span class="family-name">{{ row.family.name }}</span>
+          @if (row.note) {
+            <span class="note">{{ row.note }}</span>
+          }
+        </div>
+        <span class="amount">{{ row.amount | yen }}</span>
+        <!-- チェック欄（押しやすい 48px の丸） -->
+        <button
+          type="button"
+          role="checkbox"
+          class="check"
+          [attr.aria-checked]="checkRecord !== null"
+          [attr.aria-label]="row.family.name + 'の' + title() + 'チェック'"
+          (click)="toggle(row)"
+        >
+          @if (checkRecord !== null) {
+            <mat-icon>check</mat-icon>
+          }
+        </button>
+      </div>
+
+      @if (checkRecord) {
+        <p class="checked-by">
+          @if (checkRecord.checkedAt) {
+            {{ store.familyName(checkRecord.checkedByFamilyId) }}
+            {{ checkRecord.checkedAt.toDate() | date: 'M/d H:mm' }} にチェック
+          } @else {
+            保存中…
+          }
+        </p>
+        @if (difference(row) !== 0) {
+          <p class="changed">
+            <mat-icon>warning</mat-icon>
+            金額が変わりました（{{ doneWord() }} {{ checkRecord.amount | yen }}、差額
+            {{ difference(row) > 0 ? '+' : '−' }}{{ (difference(row) > 0 ? difference(row) : -difference(row)) | yen }}）
+          </p>
+        }
+      }
+    </div>
+  } @empty {
+    <p class="empty">対象の家族はいません。</p>
+  }
+</section>

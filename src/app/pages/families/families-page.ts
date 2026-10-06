@@ -81,14 +81,8 @@ export class FamiliesPage {
     if (rentalNames.length > 0) {
       reasons.push(`・家庭ごとのレンタル品${rentalNames.join('')}の数量が入っています（0にしてください）`);
     }
-    try {
-      if (await this.familyService.hasExpenses(roomId, family.id)) {
-        reasons.push('・立て替えた支出が登録されています（会計タブで確認できます）');
-      }
-    } catch (error) {
-      console.error('支出を確認できませんでした', error);
-      this.showMessage('削除できるか確認できませんでした。通信環境を確認してください');
-      return;
+    if ((this.store.expenses() ?? []).some((expense) => expense.payerFamilyId === family.id)) {
+      reasons.push('・立て替えた支出が登録されています（会計タブで確認できます）');
     }
     if (reasons.length > 0) {
       await this.confirmDialog.alert(`「${family.name}」は削除できません`, reasons.join('\n'));
