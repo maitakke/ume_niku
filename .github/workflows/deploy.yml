@@ -1,0 +1,53 @@
+# GitHub Actions：コードがプッシュされたら、自動でテスト・ビルドして Firebase に公開する
+name: Firebase に公開
+
+on:
+  # 下のブランチにプッシュされたとき
+  push:
+    branches:
+      - main
+      - claude/vibrant-brahmagupta-mv6ugv
+  # GitHub の画面から手動で実行したとき（Actions タブの「Run workflow」ボタン）
+  workflow_dispatch:
+
+# 公開が同時に2つ走らないようにする（後から来たものは前の完了を待つ）
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: コードを取得
+        uses: actions/checkout@v5
+
+      - name: Node.js を準備
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: ライブラリをインストール
+        run: npm ci
+
+      - name: ユニットテスト
+        run: npx ng test --watch=false --browsers=ChromeHeadlessNoSandbox
+
+      - name: ビルド
+        run: npm run build
+
+      - name: Firebase の鍵を準備
+        env:
+          SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$SERVICE_ACCOUNT_JSON" ]; then
+            echo "::error::GitHub の Secrets に FIREBASE_SERVICE_ACCOUNT が登録されていません。"
+            exit 1
+          fi
+          # 鍵をファイルに書き出し、firebase コマンドが読めるようにする（このファイルは実行後に破棄される）
+          printf '%s' "$SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/service-account.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/service-account.json" >> "$GITHUB_ENV"
+
+      - name: Firebase に公開（Hosting とセキュリティルール）
+        run: npx firebase deploy --only hosting,firestore:rules --project umeniku-bbq --non-interactive
