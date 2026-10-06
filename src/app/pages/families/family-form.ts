@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MAX_PEOPLE_PER_CATEGORY, PERSON_CATEGORIES, PersonCategory } from '../../constants';
 import { FamilyInput } from '../../core/family.service';
 import { CountStepper } from '../../shared/count-stepper';
+import { notBlank } from '../../shared/validators';
 
 /** 家族の入力フォーム（追加と編集の両方で使う） */
 @Component({
@@ -16,6 +17,7 @@ import { CountStepper } from '../../shared/count-stepper';
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>家族の名前</mat-label>
         <input matInput formControlName="name" placeholder="例：田中家" maxlength="30" />
+        <mat-error>家族の名前を入力してください</mat-error>
       </mat-form-field>
 
       <!-- 区分ごとの人数（－／＋で入力） -->
@@ -44,7 +46,7 @@ import { CountStepper } from '../../shared/count-stepper';
           mat-flat-button
           type="submit"
           class="big-button"
-          [disabled]="!form.controls.name.value.trim() || saving()"
+          [disabled]="form.invalid || saving()"
         >
           {{ submitLabel() }}
         </button>
@@ -95,7 +97,7 @@ export class FamilyForm implements OnInit {
   protected readonly form = new FormGroup({
     name: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(30)],
+      validators: [notBlank, Validators.maxLength(30)],
     }),
     memo: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(200)] }),
   });
@@ -128,7 +130,7 @@ export class FamilyForm implements OnInit {
 
   protected submit(): void {
     const name = this.form.controls.name.value.trim();
-    if (!name || this.form.invalid) {
+    if (this.form.invalid) {
       return;
     }
     this.save.emit({ name, memo: this.form.controls.memo.value.trim(), ...this.counts() });

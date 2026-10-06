@@ -40,9 +40,7 @@ import { Family } from '../../models/family';
           [max]="maxAmount"
           placeholder="例：3000"
         />
-        @if (form.controls.amount.invalid && form.controls.amount.touched) {
-          <mat-error>1〜{{ maxAmount.toLocaleString() }}の整数</mat-error>
-        }
+        <mat-error>1〜{{ maxAmount.toLocaleString() }}円の整数で入力してください</mat-error>
       </mat-form-field>
 
       <!-- カテゴリ（押して選ぶ） -->

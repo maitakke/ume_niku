@@ -96,6 +96,17 @@ describe('サインインしていない人', () => {
     await assertFails(getDocs(collection(guestDb(), 'rooms', ROOM_ID, 'families')));
   });
 
+  it('役割分担も支出も読めない', async () => {
+    await assertFails(getDocs(collection(guestDb(), 'rooms', ROOM_ID, 'items')));
+    await assertFails(getDocs(collection(guestDb(), 'rooms', ROOM_ID, 'expenses')));
+  });
+
+  it('家族を追加できない', async () => {
+    await assertFails(
+      setDoc(doc(guestDb(), 'rooms', ROOM_ID, 'families', 'family-2'), validFamily()),
+    );
+  });
+
   it('ルームを作れない', async () => {
     await assertFails(
       setDoc(doc(guestDb(), 'rooms', 'NewRoomNewRoomNewRoom1'), {
@@ -392,6 +403,28 @@ describe('expenses（支出）', () => {
         amount: 3500,
         description: 'お肉と野菜',
       }),
+    );
+  });
+
+  it('存在しないルームの支出は読めない', async () => {
+    await assertFails(getDocs(collection(signedInDb(), 'rooms', OTHER_ROOM_ID, 'expenses')));
+  });
+
+  it('金額が上限（100万円）を超えると登録できない', async () => {
+    await assertFails(
+      setDoc(
+        doc(signedInDb(), 'rooms', ROOM_ID, 'expenses', 'expense-2'),
+        validExpense({ amount: 1000001 }),
+      ),
+    );
+  });
+
+  it('金額が文字列だと登録できない', async () => {
+    await assertFails(
+      setDoc(
+        doc(signedInDb(), 'rooms', ROOM_ID, 'expenses', 'expense-2'),
+        validExpense({ amount: '3000' }),
+      ),
     );
   });
 

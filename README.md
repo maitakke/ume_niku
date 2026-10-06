@@ -1,59 +1,88 @@
-# UmenikuBbq
+# うめにくBBQ
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.38.
+友達家族（約10家族）で行うBBQ（2026年11月1日開催）の
+「参加家族」「役割分担」「会計（立替・精算）」を、みんなで共有して管理する Web アプリです。
 
-## Development server
+- 公開URL：https://umeniku-bbq.web.app
+- グループを作って URL を LINE などで送るだけ。会員登録は不要です
+- 変更はリアルタイムで全員の画面に反映されます
 
-To start a local development server, run:
+## できること
 
-```bash
-ng serve
+| タブ | 内容 |
+|---|---|
+| ダッシュボード | 人数（区分別・総合計）、担当が未定の項目数、レンタル品の合計と支払った家族、支出の合計とカテゴリ別の円グラフ、集金の進捗 |
+| 家族 | 家族ごとの人数（大人／小中学生／幼児／乳児）とメモの登録・編集・削除、全体の集計（精算対象人数つき） |
+| 役割分担 | 食材・持ち寄り物品（何を／誰が／どのくらい）、レンタル品（全体で割る／家庭ごと、単価、支払った家族） |
+| 会計 | 立て替えた支出の登録・編集・削除、精算（集金額・返金額・余剰金）、集金・返金のチェック、家族ごとの明細 |
+
+精算のルール（重み：大人1・小中学生0.5・幼児0.5・乳児0、集金額は100円単位で切り上げ など）は
+[CLAUDE.md](./CLAUDE.md) の「精算のルール」と [docs/plan.md](./docs/plan.md) にまとめています。
+
+## 使っている技術
+
+- Angular 20（standalone components）＋ Angular Material 20
+- Firebase：Cloud Firestore、Authentication（匿名認証）、Hosting（すべて無料の Spark プラン）
+- AngularFire 20.1.0 ＋ Firebase JS SDK v11（AngularFire 20 が v11 を前提にしているため、v12 にしないこと）
+- グラフ：ng2-charts 9 ＋ Chart.js 4
+- フォント：Zen Maru Gothic（Google Fonts）
+
+## フォルダの構成
+
+```
+src/app/
+├── app.config.ts        Firebase の初期化、起動時の匿名サインイン
+├── app.routes.ts        画面と URL の対応表
+├── constants.ts         精算の重み、カテゴリの表示名などの決まった値
+├── models/              Firestore に保存するデータの形（型）
+├── core/                サービス（Firestore への読み書き、計算、共通の処理）
+│   ├── room.store.ts        開いているグループのデータを全画面で共有する入れ物
+│   ├── settlement.service.ts 人数・レンタル・精算の計算（ユニットテストあり）
+│   └── ...
+├── shared/              画面で使う共通の部品（－／＋ボタン、確認ダイアログ、金額表示など）
+└── pages/               画面（トップ、家族の選択、各タブ）
+src/styles.scss          色・角丸・フォントのテーマ（CSS変数）。デザインはここだけで管理
+firestore.rules          Firestore セキュリティルール
+tests/                   セキュリティルールのテスト
+docs/plan.md             設計メモ（データ構造、ルール、決めたこと）
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## 公開のしくみ（GitHub Actions）
 
-## Code scaffolding
+`claude/vibrant-brahmagupta-mv6ugv` または `main` ブランチにプッシュすると、
+GitHub Actions（`.github/workflows/deploy.yml`）が自動で次を行います。
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+1. ユニットテスト
+2. セキュリティルールのテスト（Firestore エミュレーター）
+3. ビルド
+4. Firebase Hosting とセキュリティルールの公開
 
-```bash
-ng generate component component-name
-```
+テストが1つでも失敗すると公開されません。
+GitHub の「Actions」タブの「Run workflow」から手動で公開することもできます。
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+公開には、GitHub の Secrets に `FIREBASE_SERVICE_ACCOUNT`（サービスアカウントの鍵 JSON）の登録が必要です。
+鍵はチャットやコードには絶対に書かないでください。
 
-```bash
-ng generate --help
-```
+## 手元で動かす場合（任意）
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+Node.js 20.19 以上と Git が必要です。
 
 ```bash
-ng test
+npm install          # ライブラリのインストール
+npm start            # 開発用サーバー → http://localhost:4200
+npm test             # ユニットテスト（Chrome が必要）
+npm run test:rules   # セキュリティルールのテスト（Java 21 以上が必要）
+npm run deploy       # 手元から公開（事前に npx firebase login が必要）
 ```
 
-## Running end-to-end tests
+※ `npm audit fix --force` は実行しないでください（Angular 20 との組み合わせが壊れます）。
 
-For end-to-end (e2e) testing, run:
+## Firebase の設定（コンソールで済んでいるもの）
 
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- プロジェクトID：`umeniku-bbq`（Spark プラン）
+- Authentication：匿名ログインを有効
+- Firestore：`asia-northeast1`（東京）、本番環境モードで作成
+- セキュリティルール：`firestore.rules`（テストモードは使わない）
+  - サインインしていない人は読み書きできない
+  - rooms の一覧取得は禁止。roomId を知っている人だけがそのグループを読み書きできる
+  - 人数・金額・数量は0以上の整数、文字列は長さを制限

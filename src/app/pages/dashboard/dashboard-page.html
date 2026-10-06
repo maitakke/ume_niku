@@ -1,0 +1,136 @@
+<h1>ダッシュボード</h1>
+
+<!-- 人数 -->
+<a class="card tile" [routerLink]="['/r', store.roomId(), 'families']">
+  <h2 class="tile-title">
+    <mat-icon>groups</mat-icon>
+    人数
+    <span class="tile-more">家族へ</span>
+  </h2>
+  <div class="people-grid">
+    @for (category of categories; track category.key) {
+      <div class="people-cell">
+        <span class="label">{{ category.label }}</span>
+        <strong>{{ store.peopleSummary().counts[category.key] }}<small>人</small></strong>
+      </div>
+    }
+  </div>
+  <p class="people-total">
+    総合計 <strong>{{ store.peopleSummary().total }}人</strong>
+    <span class="sub">（{{ store.families()?.length ?? 0 }}家族・精算 {{ store.peopleSummary().weightedTotal }}人分）</span>
+  </p>
+</a>
+
+<!-- 役割分担：未定の項目数 -->
+<a class="card tile" [routerLink]="['/r', store.roomId(), 'roles']">
+  <h2 class="tile-title">
+    <mat-icon>checklist</mat-icon>
+    役割分担
+    <span class="tile-more">役割分担へ</span>
+  </h2>
+  @if (store.undecidedItemCount() > 0) {
+    <p class="big-line">
+      担当が未定 <strong class="accent">{{ store.undecidedItemCount() }}件</strong>
+    </p>
+    <p class="sub">タップして担当を決めましょう</p>
+  } @else {
+    <p class="big-line">担当はすべて決まっています</p>
+  }
+</a>
+
+<!-- レンタル品 -->
+<a class="card tile" [routerLink]="['/r', store.roomId(), 'roles']">
+  <h2 class="tile-title">
+    <mat-icon>chair</mat-icon>
+    レンタル品
+    <span class="tile-more">役割分担へ</span>
+  </h2>
+  <p class="big-line">
+    合計 <strong>{{ store.rentalSummary().total | yen }}</strong>
+  </p>
+  <dl class="rows">
+    <div>
+      <dt>全体で割る分</dt>
+      <dd>{{ store.rentalSummary().sharedTotal | yen }}</dd>
+    </div>
+    <div>
+      <dt>家庭ごとの分</dt>
+      <dd>{{ store.rentalSummary().perFamilyTotal | yen }}</dd>
+    </div>
+    <div>
+      <dt>支払った家族</dt>
+      <dd>
+        @if (store.rentalPayer(); as payer) {
+          {{ payer.name }}
+        } @else {
+          <span class="tag-accent">未定</span>
+        }
+      </dd>
+    </div>
+  </dl>
+</a>
+
+<!-- 支出 -->
+<section class="card">
+  <h2 class="tile-title">
+    <mat-icon>receipt_long</mat-icon>
+    支出
+  </h2>
+  <p class="big-line">
+    合計 <strong>{{ store.settlementResult().expenseTotal | yen }}</strong>
+  </p>
+  @if (expenseSlices().length > 0) {
+    <div class="chart-area">
+      <div class="chart">
+        <canvas
+          baseChart
+          type="doughnut"
+          [data]="chartData()"
+          [options]="chartOptions"
+          aria-label="支出のカテゴリ別の円グラフ"
+          role="img"
+        ></canvas>
+      </div>
+      <!-- 凡例（名前・金額・割合）。色だけに頼らず読めるようにする -->
+      <ul class="legend">
+        @for (slice of expenseSlices(); track slice.key) {
+          <li>
+            <span class="swatch" [style.background]="slice.color"></span>
+            <span class="legend-label">{{ slice.label }}</span>
+            <span class="legend-amount">{{ slice.amount | yen }}</span>
+            <span class="legend-percent">{{ slice.percent }}%</span>
+          </li>
+        }
+      </ul>
+    </div>
+  } @else {
+    <p class="sub">まだ支出が登録されていません。</p>
+  }
+</section>
+
+<!-- 集金の進捗 -->
+<a class="card tile" [routerLink]="['/r', store.roomId(), 'accounting']">
+  <h2 class="tile-title">
+    <mat-icon>payments</mat-icon>
+    集金の進捗
+    <span class="tile-more">会計へ</span>
+  </h2>
+  <p class="big-line">
+    集金済み
+    <strong>{{ store.collectionProgress().checkedCount }} / {{ store.collectionProgress().totalCount }}家族</strong>
+  </p>
+  <div
+    class="progress-bar"
+    role="progressbar"
+    [attr.aria-valuenow]="collectionPercent()"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-label="集まった金額の割合"
+  >
+    <div class="progress-fill" [style.width.%]="collectionPercent()"></div>
+  </div>
+  <p class="progress-amount">
+    集まった金額 <strong>{{ store.collectionProgress().collectedAmount | yen }}</strong>
+    / {{ store.collectionProgress().totalAmount | yen }}
+  </p>
+</a>

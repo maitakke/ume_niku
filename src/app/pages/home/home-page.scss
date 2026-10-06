@@ -1,5 +1,25 @@
+// 丸の中のグリルのアイコン
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  margin: 32px auto 0;
+  border-radius: 50%;
+  background: var(--color-main-gradient);
+  box-shadow: 0 4px 0 var(--color-main-shadow);
+  color: #fff;
+}
+
+.logo mat-icon {
+  width: 40px;
+  height: 40px;
+  font-size: 40px;
+}
+
 .title {
-  margin: 40px 0 8px;
+  margin: 16px 0 8px;
   color: var(--color-main-text);
   font-size: 2rem;
 }

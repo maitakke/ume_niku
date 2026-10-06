@@ -42,10 +42,7 @@ export class AssignedItemsSection {
 
   /** 担当が「未定」か（担当の家族が削除された場合も未定として扱う） */
   protected isUndecided(item: AssignedItem): boolean {
-    return (
-      item.assigneeFamilyId === null ||
-      !(this.store.families() ?? []).some((family) => family.id === item.assigneeFamilyId)
-    );
+    return this.store.isUndecided(item);
   }
 
   async add(input: AssignedItemInput): Promise<void> {

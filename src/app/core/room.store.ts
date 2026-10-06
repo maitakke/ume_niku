@@ -7,8 +7,9 @@ import { ItemService } from './item.service';
 import { ExpenseService } from './expense.service';
 import { CurrentFamilyService } from './current-family.service';
 import { SettlementService } from './settlement.service';
+import { EXPENSE_CATEGORIES } from '../constants';
 import { Family } from '../models/family';
-import { Item } from '../models/item';
+import { AssignedItem, Item } from '../models/item';
 import { Expense } from '../models/expense';
 
 /**
@@ -90,6 +91,37 @@ export class RoomStore {
     return this.families()?.find((family) => family.id === payerId) ?? null;
   });
 
+  /** 食材・持ち寄りのうち、担当が未定の件数 */
+  readonly undecidedItemCount = computed(
+    () =>
+      (this.items() ?? []).filter(
+        (item) => item.category !== 'rental' && this.isUndecided(item),
+      ).length,
+  );
+
+  /** 集金の進捗（集金済みの家族数・集まった金額） */
+  readonly collectionProgress = computed(() => {
+    const rows = this.settlementResult().families;
+    const checked = rows.filter((row) => row.family.collectionCheck !== null);
+    return {
+      checkedCount: checked.length,
+      totalCount: rows.length,
+      // 集まった金額は、チェックしたときに記録した金額の合計
+      collectedAmount: checked.reduce((sum, row) => sum + (row.family.collectionCheck?.amount ?? 0), 0),
+      totalAmount: this.settlementResult().collectTotal,
+    };
+  });
+
+  /** 支出のカテゴリ別の合計（カテゴリの並び順どおり） */
+  readonly expenseByCategory = computed(() =>
+    EXPENSE_CATEGORIES.map((category) => ({
+      ...category,
+      amount: (this.expenses() ?? [])
+        .filter((expense) => expense.category === category.key)
+        .reduce((sum, expense) => sum + expense.amount, 0),
+    })),
+  );
+
   /** 表示するグループを切り替える */
   open(roomId: string): void {
     this.roomId.set(roomId);
@@ -108,6 +140,11 @@ export class RoomStore {
       return '未定';
     }
     return this.familyNames().get(familyId) ?? '削除された家族';
+  }
+
+  /** 食材・持ち寄りの担当が「未定」か（担当の家族が削除された場合も未定として扱う） */
+  isUndecided(item: AssignedItem): boolean {
+    return item.assigneeFamilyId === null || !this.familyNames().has(item.assigneeFamilyId);
   }
 
   /**

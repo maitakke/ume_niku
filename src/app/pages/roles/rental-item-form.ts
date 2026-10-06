@@ -13,6 +13,7 @@ import { MAX_RENTAL_QUANTITY, MAX_UNIT_PRICE, SPLIT_TYPE_LABELS } from '../../co
 import { RentalItemInput } from '../../core/item.service';
 import { SplitType } from '../../models/item';
 import { CountStepper } from '../../shared/count-stepper';
+import { notBlank } from '../../shared/validators';
 
 /** レンタル品のフォームが知らせる内容（分け方つき） */
 export interface RentalItemFormValue extends RentalItemInput {
@@ -28,6 +29,7 @@ export interface RentalItemFormValue extends RentalItemInput {
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>何を？</mat-label>
         <input matInput formControlName="name" placeholder="例：焼き台、椅子" maxlength="50" />
+        <mat-error>品名を入力してください</mat-error>
       </mat-form-field>
 
       <!-- 分け方（追加のときだけ選べる。あとから変更はできない） -->
@@ -67,9 +69,7 @@ export interface RentalItemFormValue extends RentalItemInput {
             min="0"
             [max]="maxUnitPrice"
           />
-          @if (form.controls.unitPrice.invalid && form.controls.unitPrice.touched) {
-            <mat-error>0〜{{ maxUnitPrice.toLocaleString() }}の整数</mat-error>
-          }
+          <mat-error>0〜{{ maxUnitPrice.toLocaleString() }}円の整数で入力してください</mat-error>
         </mat-form-field>
 
         @if (splitType() === 'shared') {
@@ -95,7 +95,7 @@ export interface RentalItemFormValue extends RentalItemInput {
           mat-flat-button
           type="submit"
           class="big-button"
-          [disabled]="!form.controls.name.value.trim() || form.invalid || saving()"
+          [disabled]="form.invalid || saving()"
         >
           {{ submitLabel() }}
         </button>
@@ -163,7 +163,7 @@ export class RentalItemForm implements OnInit {
   protected readonly form = new FormGroup({
     name: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(50)],
+      validators: [notBlank, Validators.maxLength(50)],
     }),
     // 単価は 0 以上の整数（金額は円の整数で扱う）
     unitPrice: new FormControl<number | null>(null, [
@@ -194,7 +194,7 @@ export class RentalItemForm implements OnInit {
   protected submit(): void {
     const name = this.form.controls.name.value.trim();
     const unitPrice = this.form.controls.unitPrice.value;
-    if (!name || this.form.invalid || unitPrice === null) {
+    if (this.form.invalid || unitPrice === null) {
       return;
     }
     this.save.emit({

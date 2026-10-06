@@ -13,6 +13,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { UNDECIDED } from '../../constants';
 import { AssignedItemInput } from '../../core/item.service';
 import { Family } from '../../models/family';
+import { notBlank } from '../../shared/validators';
 
 /** 食材・持ち寄り物品の入力フォーム（追加と編集の両方で使う） */
 @Component({
@@ -23,6 +24,7 @@ import { Family } from '../../models/family';
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>何を？</mat-label>
         <input matInput formControlName="name" [placeholder]="namePlaceholder()" maxlength="50" />
+        <mat-error>品名を入力してください</mat-error>
       </mat-form-field>
 
       <div class="row">
@@ -52,7 +54,7 @@ import { Family } from '../../models/family';
           mat-flat-button
           type="submit"
           class="big-button"
-          [disabled]="!form.controls.name.value.trim() || saving()"
+          [disabled]="form.invalid || saving()"
         >
           {{ submitLabel() }}
         </button>
@@ -103,7 +105,7 @@ export class AssignedItemForm implements OnInit {
   protected readonly form = new FormGroup({
     name: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(50)],
+      validators: [notBlank, Validators.maxLength(50)],
     }),
     assigneeFamilyId: new FormControl(UNDECIDED, { nonNullable: true }),
     quantityText: new FormControl('', {
@@ -121,7 +123,7 @@ export class AssignedItemForm implements OnInit {
 
   protected submit(): void {
     const name = this.form.controls.name.value.trim();
-    if (!name || this.form.invalid) {
+    if (this.form.invalid) {
       return;
     }
     const assignee = this.form.controls.assigneeFamilyId.value;

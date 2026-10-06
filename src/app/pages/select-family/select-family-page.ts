@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RoomStore } from '../../core/room.store';
 import { FamilyService } from '../../core/family.service';
+import { notBlank } from '../../shared/validators';
 
 /** 「あなたはどの家族ですか？」画面：家族を選ぶ、または新しく追加する */
 @Component({
@@ -33,7 +34,7 @@ export class SelectFamilyPage {
   /** 新しい家族の名前の入力欄 */
   readonly nameControl = new FormControl('', {
     nonNullable: true,
-    validators: [Validators.required, Validators.maxLength(30)],
+    validators: [notBlank, Validators.maxLength(30)],
   });
 
   /** 入力フォーム（<form [formGroup]> に結びつけると、送信時にページが再読み込みされない） */
@@ -51,7 +52,7 @@ export class SelectFamilyPage {
   /** 新しい家族を追加して、その家族を選ぶ */
   async addFamily(): Promise<void> {
     const name = this.nameControl.value.trim();
-    if (!name || this.nameControl.invalid || this.adding()) {
+    if (this.nameControl.invalid || this.adding()) {
       return;
     }
     // 同じ名前の家族がすでにあれば、追加せずに知らせる

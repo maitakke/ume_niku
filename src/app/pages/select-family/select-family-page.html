@@ -30,12 +30,13 @@
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>家族の名前</mat-label>
         <input matInput [formControl]="nameControl" placeholder="例：田中家" maxlength="30" />
+        <mat-error>家族の名前を入力してください</mat-error>
       </mat-form-field>
       <button
         mat-flat-button
         type="submit"
         class="full-width big-button"
-        [disabled]="!nameControl.value.trim() || adding()"
+        [disabled]="nameControl.invalid || adding()"
       >
         {{ adding() ? '追加中…' : '追加して選ぶ' }}
       </button>

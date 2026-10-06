@@ -138,6 +138,8 @@ CheckRecord = `{ amount: number, checkedByFamilyId: string, checkedAt: Timestamp
 - Angular 20 / Angular Material 20 / AngularFire 20.1.0
 - Firebase SDK は **v11**（AngularFire 20.1.0 が v11 を前提にしているため。v12 を入れると2つの版が混ざって動かない）
 - ルールのテストは @firebase/rules-unit-testing v4（Firebase v11 用）
+- グラフは ng2-charts 9（Angular 20 用）＋ Chart.js 4。ダッシュボードを開いたときだけ読み込む
+- グラフの支出カテゴリの色は、隣り合う色が色覚の多様性を含めて見分けられることを確認済み（食材 #12A594／飲み物 #C98A0E／備品 #3B82D6／会場 #E0604A／その他 #8B5CD6）
 
 ## 11. 実装ステップ
 1. 土台：Angular 作成、Material 導入、Firebase プロジェクト作成、AngularFire 接続、匿名認証、全拒否ルール、Hosting 初回公開
@@ -145,3 +147,5 @@ CheckRecord = `{ amount: number, checkedByFamilyId: string, checkedAt: Timestamp
 3. 家族タブ・役割分担タブ
 4. 会計タブ（支出、SettlementService とテスト、集金・返金チェック）
 5. ダッシュボード・デザイン仕上げ・ルール最終化・本番公開
+
+（2026-10-06 時点で Step 1〜5 すべて完了）
