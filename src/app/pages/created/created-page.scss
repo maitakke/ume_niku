@@ -1,6 +1,8 @@
 .room-name {
+  color: var(--color-main-text);
   font-size: 1.2rem;
-  font-weight: bold;
+  font-weight: 900;
+  text-align: center;
 }
 
 .url-box {
@@ -8,11 +10,14 @@
   width: 100%;
   padding: 12px;
   margin-bottom: 16px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius-control);
+  background: var(--color-item);
+  color: var(--color-text);
+  font-family: inherit;
   font-size: 0.9rem;
 }
 
 .big-button + .big-button {
-  margin-top: 12px;
+  margin-top: 16px;
 }

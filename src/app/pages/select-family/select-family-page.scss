@@ -1,6 +1,8 @@
 .room-name {
   margin: 16px 0 0;
-  font-weight: bold;
+  color: var(--color-text-sub);
+  font-weight: 700;
+  text-align: center;
 }
 
 .family-list {
@@ -11,19 +13,21 @@
 }
 
 .family-button {
-  font-size: 1rem;
+  background: var(--color-surface);
+  font-size: 1.05rem;
 }
 
+// この端末で選ばれている家族
 .family-button.selected {
-  border-width: 2px;
-  font-weight: bold;
+  background: var(--color-main-soft);
+  font-weight: 900;
 }
 
 .hint {
   margin-bottom: 24px;
+  text-align: center;
 }
 
 h2 {
   margin-top: 0;
-  font-size: 1rem;
 }

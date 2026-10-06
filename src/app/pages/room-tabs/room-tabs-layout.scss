@@ -7,8 +7,8 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: var(--mat-sys-surface);
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-line);
 }
 
 .header-text {
@@ -18,12 +18,13 @@
 
 .room-name {
   overflow: hidden;
-  font-weight: bold;
+  font-weight: 900;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .current-family {
+  color: var(--color-text-sub);
   font-size: 0.8rem;
 }
 
@@ -49,8 +50,8 @@
   left: 0;
   display: flex;
   padding-bottom: env(safe-area-inset-bottom); // iPhone の下のバーをよける
-  background: var(--mat-sys-surface);
-  border-top: 1px solid var(--mat-sys-outline-variant);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-line);
 }
 
 .tab {
@@ -60,13 +61,26 @@
   align-items: center;
   justify-content: center;
   min-height: 56px;
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--color-text-sub);
+  font-weight: 500;
   text-decoration: none;
 }
 
+// 選ばれているタブ：アイコンの後ろにうすいミントの丸
+.tab mat-icon {
+  width: 48px;
+  padding: 2px 0;
+  border-radius: var(--radius-pill);
+  text-align: center;
+}
+
 .tab.active {
-  color: var(--mat-sys-primary);
-  font-weight: bold;
+  color: var(--color-main-text);
+  font-weight: 900;
+}
+
+.tab.active mat-icon {
+  background: var(--color-main-soft);
 }
 
 .tab-label {
