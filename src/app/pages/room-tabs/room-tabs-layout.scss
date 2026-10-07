@@ -45,6 +45,7 @@
 // 下のタブバー（画面下に固定）
 .tab-bar {
   position: fixed;
+  z-index: 10;
   right: 0;
   bottom: 0;
   left: 0;
